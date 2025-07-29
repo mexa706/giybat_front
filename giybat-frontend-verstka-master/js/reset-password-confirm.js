@@ -10,9 +10,34 @@ function resetPasswordConfirm() {
 
     const body = {
         "username": username,
-        "confirmCode": confirmCodeValue,
+        "code": confirmCodeValue,
         "password": newPasswordValue,
     }
 
     const lang = document.getElementById("current-lang").textContent;
+
+    fetch("http://localhost:8081/auth/reset-password-confirm", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept-Language': lang
+        },
+        body: JSON.stringify(body)
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            } else {
+                return Promise.reject(response.text());
+            }
+        }).then(item => {
+        alert(item.data);
+        window.location.href = "./login.html";
+
+    }).catch(error => {
+        error.then(errMessage => {
+            alert(errMessage)
+        })
+    });
+
 }
