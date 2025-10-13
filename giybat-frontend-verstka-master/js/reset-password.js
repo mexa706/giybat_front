@@ -27,7 +27,7 @@ function resetPassword() {
                 return Promise.reject(response.text());
             }
         }).then(item => {
-        alert(item.data);
+        alert(item.message);
 
         localStorage.setItem("username", username);
 

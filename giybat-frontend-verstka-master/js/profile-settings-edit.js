@@ -4,17 +4,27 @@ window.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // const userDetailObj = JSON.parse(userDetailJon);
+    const userDetailObj = JSON.parse(userDetailJon);
 
-    // document.getElementById("profile_settings_name").value = userDetailObj.name;
-    // document.getElementById("profile_settings_username").value = userDetailObj.username;
-    // if(userDetailObj.photo){
-    //     document.getElementById("profile_settings_photo").src = userDetailObj.photo.url;
-    // }
+    document.getElementById("profile_settings_name").value = userDetailObj.name;
+    document.getElementById("profile_settings_username").value = userDetailObj.username;
+    if (userDetailObj.photo) {
+        document.getElementById("profile_settings_photo").src = userDetailObj.photo.url;
+    }
 });
 
 function profileDetailUpdate() {
+
+    const lang = document.getElementById("current-lang").textContent;
+
     const name = document.getElementById("profile_settings_name").value
+
+    const jwt = localStorage.getItem("jwtToken");
+    if (!jwt) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     if (!name) {
         alert("Enter the name input. Mazgimisiz!")
         return;
@@ -23,6 +33,38 @@ function profileDetailUpdate() {
     const body = {
         "name": name
     }
+
+    fetch("http://localhost:8081/profile/detail", {
+        method: 'PUT', headers: {
+            'Content-Type': 'application/json', 'Accept-Language': lang, 'Authorization': 'Bearer ' + jwt
+        }, body: JSON.stringify(body)
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            } else {
+                return Promise.reject(response.text());
+            }
+        }).then(item => {
+        alert(item.message);
+
+        const userDetailJon = localStorage.getItem("userDetail");
+        const UserDetail = JSON.parse(userDetailJon);
+        UserDetail.name = name;
+        localStorage.setItem("userDetail", JSON.stringify(UserDetail));
+        const headerUserNameSpan = document.getElementById("header_user_name_id");
+        headerUserNameSpan.textContent = name;
+    }).catch(error => {
+        if (error instanceof Promise) {
+            error.then(errMessage => {
+                alert(errMessage);
+            });
+        } else {
+            alert(error);
+        }
+    });
+
+
 }
 
 function profilePasswordUpdate() {
@@ -34,8 +76,7 @@ function profilePasswordUpdate() {
     }
 
     const body = {
-        "currentPswd": currentPswd,
-        "newPswd": newPswd
+        "oldPassword": currentPswd, "newPassword": newPswd
     }
 
     const jwt = localStorage.getItem('jwtToken');
@@ -45,9 +86,37 @@ function profilePasswordUpdate() {
     }
 
     const lang = document.getElementById("current-lang").textContent;
+
+    fetch("http://localhost:8081/profile/updatePswd", {
+        method: 'PUT', headers: {
+            'Content-Type': 'application/json', 'Accept-Language': lang, 'Authorization': 'Bearer ' + jwt
+        }, body: JSON.stringify(body)
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            } else {
+                return Promise.reject(response.text());
+            }
+        }).then(item => {
+        alert(item.message);
+        const currentPswd = document.getElementById("profile_settings_current_pswd").value = '';
+        const newPswd = document.getElementById("profile_settings_new_pswd").value = '';
+    }).catch(error => {
+        if (error instanceof Promise) {
+            error.then(errMessage => {
+                alert(errMessage);
+            });
+        } else {
+            alert(error);
+        }
+    });
+
 }
 
 function profileUserNameChange() {
+    const lang = document.getElementById("current-lang").textContent;
+
     const username = document.getElementById("profile_settings_username").value
     if (!username) {
         alert("Enter all inputs")
@@ -62,14 +131,87 @@ function profileUserNameChange() {
         window.location.href = './login.html';
         return;
     }
+
+    fetch("http://localhost:8081/profile/username", {
+        method: 'PUT', headers: {
+            'Content-Type': 'application/json', 'Accept-Language': lang, 'Authorization': 'Bearer ' + jwt
+        }, body: JSON.stringify(body)
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            } else {
+                return Promise.reject(response.text());
+            }
+        }).then(item => {
+        document.getElementById("confirmModalResultId").textContent = item.message;
+        openModal();
+
+    }).catch(error => {
+        if (error instanceof Promise) {
+            error.then(errMessage => {
+                alert(errMessage);
+            });
+        } else {
+            alert(error);
+        }
+    });
+
 }
 
 function profileUserNameChangeConfirm() {
+    const lang = document.getElementById("current-lang").textContent;
+
     const confirmCode = document.getElementById("profileUserNameChaneConfirmInputId").value
     if (!confirmCode) {
         alert("Enter all inputs")
         return;
     }
+
+    const jwt = localStorage.getItem('jwtToken');
+    if (!jwt) {
+        window.location.href = './login.html';
+        return;
+    }
+
+    const body = {
+        "code": confirmCode
+    }
+
+    fetch("http://localhost:8081/profile/username/confirm", {
+        method: 'PUT', headers: {
+            'Content-Type': 'application/json',
+            'Accept-Language': lang,
+            'Authorization': 'Bearer ' + jwt
+        }, body: JSON.stringify(body)
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            } else {
+                return Promise.reject(response.text());
+            }
+        }).then(item => {
+        closeModal();
+        alert(item.message);
+        localStorage.setItem("jwtToken", item.data);
+        const userDetailJon = localStorage.getItem("userDetail");
+        const UserDetail = JSON.parse(userDetailJon);
+        UserDetail.username = document.getElementById("profile_settings_username").value;
+        UserDetail.jwt = item.data;
+        localStorage.setItem("username", document.getElementById("profile_settings_username").value);
+        localStorage.setItem("userDetail", JSON.stringify(UserDetail));
+
+    }).catch(error => {
+        if (error instanceof Promise) {
+            error.then(errMessage => {
+                alert(errMessage);
+            });
+        } else {
+            alert(error);
+        }
+    });
+
 }
 
 //------------ Change username confirm modal start ------------

@@ -53,7 +53,7 @@ document.getElementById("registrationForm")
 
 
             if (emailOrPhone==='Email') { //email
-                localStorage.setItem("registrationEmailMessage", item.data);
+                localStorage.setItem("registrationEmailMessage", item.message);
                 window.location.href = "./registration-email-confirm.html";
             } else if (emailOrPhone==='Phone') { //phone
                 localStorage.setItem("userPhoneNumber", phoneEmail);

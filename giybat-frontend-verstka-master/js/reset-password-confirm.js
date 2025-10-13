@@ -31,7 +31,7 @@ function resetPasswordConfirm() {
                 return Promise.reject(response.text());
             }
         }).then(item => {
-        alert(item.data);
+        alert(item.message);
         window.location.href = "./login.html";
 
     }).catch(error => {
