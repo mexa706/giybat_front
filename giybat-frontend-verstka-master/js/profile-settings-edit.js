@@ -8,8 +8,8 @@ window.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("profile_settings_name").value = userDetailObj.name;
     document.getElementById("profile_settings_username").value = userDetailObj.username;
-    if (userDetailObj.photo) {
-        document.getElementById("profile_settings_photo").src = userDetailObj.photo.url;
+    if (userDetailObj.attach) {
+        document.getElementById("profile_settings_photo").src = userDetailObj.attach.url;
     }
 });
 
@@ -263,39 +263,39 @@ function uploadImage() {
             return;
         }
         const lang = document.getElementById("current-lang").textContent;
-        //
-        // fetch('http://localhost:8080/attach/upload', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Accept-Language': lang,
-        //         'Authorization': 'Bearer ' + jwt
-        //     },
-        //     body: formData
-        // })
-        //     .then(response => {
-        //         if (!response.ok) {
-        //             throw new Error('Network response was not ok');
-        //         }
-        //         return response.json();
-        //     })
-        //     .then(data => {
-        //         console.log('Success:', data);
-        //         if (data.id) {
-        //             updateProfileImage(data.id); // profile update image
-        //
-        //             const userDetailJon = localStorage.getItem("userDetail");
-        //             const userDetail = JSON.parse(userDetailJon);
-        //             userDetail.photo = {};
-        //             userDetail.photo.id = data.id;
-        //             userDetail.photo.url = data.url;
-        //             localStorage.setItem("userDetail", JSON.stringify(userDetail));
-        //
-        //             // document.getElementById("header_user_image_id").src =data.url;
-        //         }
-        //     })
-        //     .catch(error => {
-        //         console.error('Error:', error);
-        //     });
+
+        fetch('http://localhost:8081/attach/upload', {
+            method: 'POST',
+            headers: {
+                'Accept-Language': lang,
+                'Authorization': 'Bearer ' + jwt
+            },
+            body: formData
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                if (data.id) {
+                    updateProfileImage(data.id); // profile update image
+
+                    const userDetailJon = localStorage.getItem("userDetail");
+                    const userDetail = JSON.parse(userDetailJon);
+                    userDetail.attach = {};
+                    userDetail.attach.id = data.id;
+                    userDetail.attach.url = data.url;
+                    localStorage.setItem("userDetail", JSON.stringify(userDetail));
+
+                    document.getElementById("header_user_image_id").src =data.url;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     }
 }
 
@@ -315,4 +315,30 @@ function updateProfileImage(photoId) {
     }
 
     const lang = document.getElementById("current-lang").textContent;
+
+
+    fetch('http://localhost:8081/profile/photo', {
+        method: 'PUT',
+        headers: {
+            'Accept-Language': lang,
+            'Authorization': 'Bearer ' + jwt,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    })
+        .then(async response => {
+            if (!response.ok) {
+                throw await response.text();
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Success:', data);
+            alert(data.message);
+            document.getElementById('profile_settings_upload_img_btn_id').style.display = 'none';
+
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
 }

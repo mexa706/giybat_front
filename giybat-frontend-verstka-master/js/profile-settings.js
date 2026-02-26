@@ -10,8 +10,8 @@ window.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("profile_settings_username").textContent = userDetailObj.username;
 
-    if(userDetailObj.photo){
-        document.getElementById("profile_settings_photo_id").src = userDetailObj.photo.url;
+   if(userDetailObj.attach){
+        document.getElementById("profile_settings_photo_id").src = userDetailObj.attach.url;
     }
 });
 

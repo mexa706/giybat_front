@@ -55,14 +55,14 @@ function login() {
             }
         }).then(item => {
 
-        console.log(item.message);
+
         localStorage.setItem("userDetail",JSON.stringify(item));
         localStorage.setItem("jwtToken",item.jwt);
 
         passwordInput.value='';
         usernameInput.value='';
 
-        window.location.href="./profile-post-list.html";
+       window.location.href="./profile-post-list.html";
 
     }).catch(error => {
         const errorDiv = document.getElementById("loginError");
