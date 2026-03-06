@@ -8,18 +8,93 @@ window.addEventListener("DOMContentLoaded", function () {
 let currentPage = 1;
 
 function getPostList() {
+
     const jwt = localStorage.getItem('jwtToken');
-    // if (!jwt) {
-    //     window.location.href = './login.html';
-    //     return;
-    // }
-    // const lang = document.getElementById("current-lang").textContent;
-    // let size = 9;
+
+    if (!jwt) {
+        window.location.href = './login.html';
+        return;
+    }
+
+    const lang = document.getElementById("current-lang").textContent;
+    let size = 9;
+
+    fetch(`http://localhost:8081/post/profile?page=${currentPage}&size=${size}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept-Language': lang,
+            'Authorization': 'Bearer ' + jwt
+        }
+    })
+        .then(response => {
+            const contentType = response.headers.get("content-type");
+
+            if (!contentType || !contentType.includes("application/json")) {
+                localStorage.removeItem("jwtToken");
+                window.location.href = "./login.html";
+                return;
+            }
+
+            if (!response.ok) {
+                return Promise.reject(response.text());
+            }
+            return response.json();
+        })
+        .then(data => {
+            showPostList(data.content);
+            showPagination(data.totalElements, data.size);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
 }
 
 function showPostList(postList) {
     const parent = document.getElementById("profile_post_container_id")
     parent.innerHTML = '';
+
+    postList.forEach(post => {
+        const div = document.createElement("div");
+        div.classList.add("position-relative", "post_box");
+        //button
+        const editButton = document.createElement("a");
+        editButton.classList.add("profile_tab_btn")
+        editButton.href = "./post-create.html?id=" + post.id;
+        //image_div
+        const imageDiv = document.createElement("div");
+        imageDiv.classList.add("post_img_box");
+        //image
+        const img = document.createElement("img");
+
+        if (post.photo && post.photo.url) {
+            img.src = post.photo.url;
+        } else {
+            img.src = "./images/post-default-img.jpg";
+        }
+
+        img.classList.add("post_img");
+        imageDiv.appendChild(img);
+
+        //title
+        const title = document.createElement("h3");
+        title.classList.add("post_title");
+        title.textContent = post.title;
+
+        //created_date
+        const created_date = document.createElement("p");
+        created_date.classList.add("post_text");
+        created_date.textContent = dateFormat(post.createdDate);
+
+        //add to main div
+        div.appendChild(created_date);
+        div.appendChild(imageDiv);
+        div.appendChild(editButton);
+        div.appendChild(title);
+
+        parent.appendChild(div);
+    })
+
 }
 
 function showPagination(totalElements, size) {
