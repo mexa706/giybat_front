@@ -1,6 +1,3 @@
-// window.onload = function () {
-//     getPostList();
-// };
 window.addEventListener("DOMContentLoaded", function () {
     getPostList();
 });
